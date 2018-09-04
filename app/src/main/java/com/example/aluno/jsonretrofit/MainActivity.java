@@ -3,6 +3,10 @@ package com.example.aluno.jsonretrofit;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import com.example.aluno.jsonretrofit.dominio.ApiEndpoint;
 import com.example.aluno.jsonretrofit.dominio.Post;
@@ -17,34 +21,50 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
+    EditText numero;
+    TextView msg;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Gson gson = new GsonBuilder()
+        msg = (TextView) findViewById(R.id.result);
+        numero = (EditText) findViewById(R.id.input);
 
-                .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
-                .create();
+        final Button button = findViewById(R.id.button1);
+        button.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
 
-        Retrofit retrofit = new Retrofit.Builder()
+                Gson gson = new GsonBuilder()
+                        .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+                        .create();
 
-                .baseUrl("https://jsonplaceholder.typicode.com/")
-                .addConverterFactory(GsonConverterFactory.create(gson))
-                .build();
+                Retrofit retrofit = new Retrofit.Builder()
 
-        ApiEndpoint apiService = retrofit.create(ApiEndpoint.class);
-        Call<Post> call = apiService.obterpost(1);
-        call.enqueue(new Callback<Post>() {
+                        .baseUrl("https://jsonplaceholder.typicode.com/")
+                        .addConverterFactory(GsonConverterFactory.create(gson))
+                        .build();
 
-            public void onResponse(Call<Post> call, Response<Post> response) {
-                int statusCode = response.code();
-                Post post = response.body();
-                Log.i("teste", "statuscode: " + statusCode);
-                Log.i("teste", "title: " + post.getTitle());
-            }
+                ApiEndpoint apiService = retrofit.create(ApiEndpoint.class);
+                Integer number = Integer.parseInt(numero.getText().toString());
 
-            public void onFailure(Call<Post> call, Throwable t) {
-                Log.i("teste", t.toString());
+                Call<Post> call = apiService.obterpost(number);
+                call.enqueue(new Callback<Post>() {
+
+                    public void onResponse(Call<Post> call, Response<Post> response) {
+                        int statusCode = response.code();
+                        Post post = response.body();
+                        String title = post.getTitle();
+                        msg.setText(title);
+                        Log.i("teste", "statuscode: " + statusCode);
+                        Log.i("teste", "title: " + post.getTitle());
+                    }
+
+                    public void onFailure(Call<Post> call, Throwable t) {
+                        //Log.i("teste", t.toString());
+                    }
+                });
+
             }
         });
     }
